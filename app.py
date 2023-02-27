@@ -77,6 +77,7 @@ def new_page_function():
 '''
 
 @app.route('/AddFriends', methods=['GET', 'POST'])
+@flask_login.login_required
 def AddFriends():
 	if flask.request.method == 'GET':
 		return '''
@@ -103,7 +104,6 @@ def AddFriends():
 		return render_template('addFriends.html', message='Added!', userid=u2)
 	
 	return  render_template('addFriends.html', message='User Not Found.')
-	
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -152,13 +152,19 @@ def register_user():
 	try:
 		email=request.form.get('email')
 		password=request.form.get('password')
+		first_name = request.form.get('first_name')
+		last_name = request.form.get('last_name')
+		dob = request.form.get('dob')
 	except:
 		print("couldn't find all tokens") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('register'))
+	
+	hometown = request.form.get('hometwon')
+	gender = request.form.get('gender')
 	cursor = conn.cursor()
 	test =  isEmailUnique(email)
 	if test:
-		print(cursor.execute("INSERT INTO Users (email, password) VALUES ('{0}', '{1}')".format(email, password)))
+		print(cursor.execute("INSERT INTO Users (email, password, first_name, last_name, dob, hometown, gender) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(email, password, first_name, last_name, dob, hometown, gender)))
 		conn.commit()
 		#log user in
 		user = User()
