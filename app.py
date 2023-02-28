@@ -101,9 +101,33 @@ def AddFriends():
 			cursor.execute("INSERT INTO friends (user1_ID, user2_ID) VALUES ('{0}', '{1}')".format(u1, u2))
 			conn.commit()
 
-		return render_template('addFriends.html', message='Added!', userid=u2)
+		return render_template('addFriends.html', message='Added!', userid=getNameFromID(u2))
 	
 	return  render_template('addFriends.html', message='User Not Found.')
+
+
+@app.route('/MyFriends', methods=['GET'])
+@flask_login.login_required
+def MyFriends():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user2_ID FROM friends WHERE user1_ID = '{0}'".format(getUserIdFromEmail(flask_login.current_user.id)))
+	friends = cursor.fetchall()
+	return render_template('showFriends.html', friends = friends)
+
+
+@app.route('/MyFriends', methods=['POST'])
+@flask_login.login_required
+def SearchFriends():
+	try:
+		uid = request.form.get('uid')
+	except:
+		return flask.redirect(flask.url_for('MyFriends'))
+	
+	cursor = conn.cursor()
+	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
+	name = cursor.fetchone()[0]
+	return render_template('showFriends.html', name = name)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -182,7 +206,12 @@ def getUsersPhotos(uid):
 
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()
-	cursor.execute("SELECT user_id  FROM Users WHERE email = '{0}'".format(email))
+	cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(email))
+	return cursor.fetchone()[0]
+
+def getNameFromID(id):
+	cursor = conn.cursor()
+	cursor.execute("SELECT first_name FROM Users WHERE user_id = '{0}'".format(id))
 	return cursor.fetchone()[0]
 
 def isEmailUnique(email):
