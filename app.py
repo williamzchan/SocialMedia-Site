@@ -187,7 +187,7 @@ def register_user():
 	cursor = conn.cursor()
 	test =  isEmailUnique(email)
 	if test:
-		print(cursor.execute("INSERT INTO Users (email, password, first_name, last_name, dob, hometown, gender) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}')".format(email, password, first_name, last_name, dob, hometown, gender)))
+		print(cursor.execute("INSERT INTO Users (email, password, first_name, last_name, dob, hometown, gender, contribution_score) VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}', '{6}', '{7}')".format(email, password, first_name, last_name, dob, hometown, gender, 0)))
 		conn.commit()
 		#log user in
 		user = User()
@@ -223,6 +223,12 @@ def isEmailUnique(email):
 		return True
 #end login code
 
+def increaseContributionScore(id):
+	cursor = conn.cursor()
+	cursor.execute("UPDATE users set contribution_score = contribution_score + 1 WHERE user_id = '{0}'".format(id))
+	conn.commit()
+	return 
+
 @app.route('/profile')
 @flask_login.login_required
 def protected():
@@ -245,6 +251,8 @@ def upload_file():
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data, uid, caption))
 		conn.commit()
+		increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
+		#add something to go into album
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
@@ -259,6 +267,15 @@ def albums():
    cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
    albums = cursor.fetchall()
    return render_template('albums.html', albums=albums)
+#aid being album id maybe not work idk
+def getAlbumPhotos(uid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
+
+
+
 
 
 #default page
