@@ -251,6 +251,15 @@ def upload_file():
 	else:
 		return render_template('upload.html')
 #end photo uploading code
+#albums stuff
+@app.route('/albums')
+@flask_login.login_required
+def albums():
+   uid = getUserIdFromEmail(flask_login.current_user.id)
+   cursor = conn.cursor()
+   cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
+   albums = cursor.fetchall()
+   return render_template('albums.html', albums=albums)
 
 
 #default page
