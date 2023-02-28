@@ -23,7 +23,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -104,7 +104,6 @@ def AddFriends():
 		return render_template('addFriends.html', message='Added!', userid=getNameFromID(u2))
 	
 	return  render_template('addFriends.html', message='User Not Found.')
-
 
 @app.route('/MyFriends', methods=['GET'])
 @flask_login.login_required
@@ -252,7 +251,7 @@ def upload_file():
 		return render_template('upload.html')
 #end photo uploading code
 #albums stuff
-@app.route('/albums')
+@app.route('/albums', methods=['GET'])
 @flask_login.login_required
 def albums():
    uid = getUserIdFromEmail(flask_login.current_user.id)
