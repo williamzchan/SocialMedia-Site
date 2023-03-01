@@ -6,6 +6,16 @@
 <h1>{{ userid }}</h1>
 {% endif %}
 
+{% if userid %}
+<h2>Reccomended people</h2>
+    <ul>
+    {% for Users in Users</U> %}
+
+        <h4>{{user[0]}}</h4>
+    {% endfor %}
+    </ul>
+{% endif %}
+
 <ul>
     <li><a href='/upload'>Upload a photo</a> </li>
     <li><a href='/MyFriends'>Show Friends</a> </li>

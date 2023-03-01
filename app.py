@@ -24,7 +24,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -348,20 +348,45 @@ def upload_file():
 	else:
 		return render_template('upload.html')
 #end photo uploading code
+
+
+'''
+@app.route('/MyFriends', methods=['GET'])
+@flask_login.login_required
+def MyFriends():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user2_ID FROM friends WHERE user1_ID = '{0}'".format(getUserIdFromEmail(flask_login.current_user.id)))
+	friends = cursor.fetchall()
+	
+
+
+	@app.route('/activities')
+def activities():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
+	users = cursor.fetchall()
+	return render_template('topUsers.html', users = users)
+'''
+
 #albums stuff
 @app.route('/albums', methods=['GET'])
 @flask_login.login_required
-def albums():
-   uid = getUserIdFromEmail(flask_login.current_user.id)
-   cursor = conn.cursor()
-   cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
-   albums = cursor.fetchall()
-   return render_template('albums.html', albums=albums)
-#aid being album id maybe not work idk
-def getAlbumPhotos(uid):
+def MyAlbums():
+	return render_template('albums.html')
+
+@app.route('/MyAlbums', methods=['POST'])
+@flask_login.login_required
+def FindMyAlbums():
+	try:
+		uid = request.form.get('uid')
+	except:
+		return render_template('albums.html', message='No user found with that email')
+   	
 	cursor = conn.cursor()
-	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+	cursor.execute("SELECT album_id FROM album WHERE user_id = '{0}'".format(getUserIdFromEmail(uid))) 
+	albums = cursor.fetchall()
+	return render_template('albums.html', albums=albums)
+#aid being album id maybe not work idk
 
 
 
@@ -378,3 +403,5 @@ if __name__ == "__main__":
 	#this is invoked when in the shell  you run
 	#$ python app.py
 	app.run(port=5000, debug=True)
+
+#shrek is real

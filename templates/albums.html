@@ -1,40 +1,45 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-div.gallery {
-  margin: 5px;
-  border: 1px solid #ccc;
-  float: left;
-  width: 180px;
-}
+<!--  use search bar to swearch for album name-->
+  
+  % if users %}
+<h2>Here are the top 10 users</h2>
+    <ul>
+    {% for user in users %}
 
-div.gallery:hover {
-  border: 1px solid #777;
-}
+        <h4>{{user[0]}}</h4>
+    {% endfor %}
+    </ul>
+{% endif %}
 
-div.gallery img {
-  width: 100%;
-  height: auto;
-}
+{% if name %}
+    <h4>{{name}}</h4>
+{% endif %}
 
-div.desc {
-  padding: 15px;
-  text-align: center;
-}
-</style>
-</head>
 <body>
-<!-- replace the thumbnail with first uploaded picture from user-->
-<div class="gallery">
-  <a target="_blank" href="img_5terre.jpg">
-    <img src="img_5terre.jpg" alt="Cinque Terre" width="600" height="400">
-  </a>
-  <div class="desc">Album 1</div>
-</div>
-
-
-
+  <div class="title">
+      <h1>Enter User's ID below</h1>
+  </div>
+  <div id="content">
+      <form method="post" action="{{ url_for('FindMyAlbum') }}">
+          <label for="uid">Enter friend's ID:</label>
+          <input type="uid" name="uid" /><br />
+          <input type="submit" />
+      </form>
+   </div>
 </body>
-</html>
 
+{% if Albums %}
+<h2>Here are your albumss</h2>
+    <ul>
+    {% for album in albums %}
+
+        <li>{{album[1]}}<br>      
+
+    {% endfor %}
+    </ul>
+
+    
+{% endif %}
+
+<ul>
+    <a href='/'>Home</a>
+</ul>
