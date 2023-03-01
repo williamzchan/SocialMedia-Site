@@ -23,7 +23,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -104,7 +104,6 @@ def AddFriends():
 		return render_template('addFriends.html', message='Added!', userid=getNameFromID(u2))
 	
 	return  render_template('addFriends.html', message='User Not Found.')
-
 
 @app.route('/MyFriends', methods=['GET'])
 @flask_login.login_required
@@ -259,13 +258,14 @@ def upload_file():
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data, uid, caption))
 		conn.commit()
 		increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
+		#add something to go into album
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')
 #end photo uploading code
 #albums stuff
-@app.route('/albums')
+@app.route('/albums', methods=['GET'])
 @flask_login.login_required
 def albums():
    uid = getUserIdFromEmail(flask_login.current_user.id)
@@ -273,6 +273,15 @@ def albums():
    cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
    albums = cursor.fetchall()
    return render_template('albums.html', albums=albums)
+#aid being album id maybe not work idk
+def getAlbumPhotos(uid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
+
+
+
 
 
 #default page
