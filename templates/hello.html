@@ -15,8 +15,33 @@
 
         <li>{{photo[2]}}<br>
         <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/></li>
+        <h4>{{photo[1]}} has {{photo[3]}} likes</h4>        
+
     {% endfor %}
     </ul>
+
+    {% if likes %}
+          {% for like in likes %}
+          <h4>{{like[0]}} likes {{like[1]}}</h4> 
+          {% endfor %}
+    {% endif %}
+
+    <body>
+      <div class="title">
+          <h1>Enter comments below</h1>
+      </div>
+      <div id="content">
+          <form method="post" action="comments">
+              <label for="comment">Enter your comment:</label>
+              <input type="comment" name="comment" /><br />
+              <label for="pid">Enter Picture ID:</label>
+              <input type="pid" name="pid" /><br />
+              <label for="like">Type Anything to Like:</label>
+              <input type="like" name="like" /><br />
+              <input type="submit" />
+          </form>
+      </div>
+    </body>
 {% endif %}
 
 {% if message is none %}
