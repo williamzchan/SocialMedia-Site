@@ -11,7 +11,7 @@ create table owner(
 create table AhasP(
 	album_id int not null,
     picture_id int unique,
-    primary key (album_id, photo_id),
+    primary key (album_id, picture_id),
     foreign key (album_id) references album(album_id),
     foreign key (picture_id) references pictures(picture_id)
 );
