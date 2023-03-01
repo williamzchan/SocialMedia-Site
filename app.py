@@ -115,6 +115,7 @@ def MyFriends():
 
 
 @app.route('/MyFriends', methods=['POST'])
+@flask_login.login_required
 def SearchFriends():
 	try:
 		uid = request.form.get('uid')
@@ -124,14 +125,7 @@ def SearchFriends():
 	cursor = conn.cursor()
 	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
 	name = cursor.fetchone()[0]
-	return render_template('hello.html', message = name, photos=getUsersPhotos(uid), base64=base64)
-
-@app.route('/activities')
-def activities():
-	cursor = conn.cursor()
-	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
-	users = cursor.fetchall()
-	return render_template('topUsers.html', users = users)
+	return render_template('showFriends.html', name = name)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -263,6 +257,7 @@ def upload_file():
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')
+
 #end photo uploading code
 #albums stuff
 @app.route('/albums', methods=['GET'])
@@ -278,6 +273,7 @@ def getAlbumPhotos(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
 
 
 
