@@ -116,7 +116,6 @@ def MyFriends():
 
 
 @app.route('/MyFriends', methods=['POST'])
-@flask_login.login_required
 def SearchFriends():
 	try:
 		uid = request.form.get('uid')
@@ -126,7 +125,14 @@ def SearchFriends():
 	cursor = conn.cursor()
 	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
 	name = cursor.fetchone()[0]
-	return render_template('showFriends.html', name = name)
+	return render_template('hello.html', message = name, photos=getUsersPhotos(uid), base64=base64)
+
+@app.route('/activities')
+def activities():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
+	users = cursor.fetchall()
+	return render_template('topUsers.html', users = users)
 
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -1,9 +1,9 @@
-{% if friends %}
-<h2>Here are your friends</h2>
+{% if users %}
+<h2>Here are the top 10 users</h2>
     <ul>
-    {% for friend in friends %}
+    {% for user in users %}
 
-        <h4>{{friend[0]}}</h4>
+        <h4>{{user[0]}}</h4>
     {% endfor %}
     </ul>
 {% endif %}
@@ -14,11 +14,11 @@
 
 <body>
     <div class="title">
-        <h1>Enter friend's ID below</h1>
+        <h1>Enter user's ID below</h1>
     </div>
     <div id="content">
         <form method="post" action="{{ url_for('SearchFriends') }}">
-            <label for="uid">Enter friend's ID:</label>
+            <label for="uid">Enter user's ID:</label>
             <input type="uid" name="uid" /><br />
             <input type="submit" />
         </form>
