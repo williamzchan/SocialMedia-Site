@@ -273,6 +273,11 @@ def getUsersPhotos(uid):
 	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
 
+def getAlbumPhotos(aid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT P.imgdata, P.picture_id, P.caption, P.like_count FROM Pictures P, ahasp AP WHERE P.picture_id = AP.picture_id AND AP.album_id = '{0}'".format(aid))
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
 def getAllPhotosLikes(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT U.first_name, P.picture_id FROM users U, likes L, pictures P WHERE P.user_id = '{0}' AND L.picture_id = P.picture_id AND L.user_id = U.user_ID".format(uid))
