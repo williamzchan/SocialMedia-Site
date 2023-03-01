@@ -24,10 +24,26 @@ create table tagged(
     foreign key (picture_id) references pictures(picture_id)
 );
 
-alter table `social_media`.`album`
+alter table `photoshare`.`album`
 change column `user_id` `user_id` int not null,
 add foreign key (user_id) references owner(user_id);
 
-alter table `social_media`.`pictures`
+alter table `photoshare`.`pictures`
 change column `user_id` `user_id` int not null,
 add foreign key (user_id) references owner(user_id);
+
+alter table `photoshare`.`commented`
+ADD COLUMN `photo_id` INT AFTER `comment_id`,
+add foreign key (picture_id) references pictures(picture_id);
+
+ALTER TABLE `photoshare`.`commented` 
+DROP FOREIGN KEY `commented_ibfk_3`;
+ALTER TABLE `photoshare`.`commented` 
+CHANGE COLUMN `picture_id` `picture_id` INT NOT NULL ,
+DROP PRIMARY KEY,
+ADD PRIMARY KEY (`user_id`, `comment_id`, `picture_id`);
+;
+ALTER TABLE `photoshare`.`commented` 
+ADD CONSTRAINT `commented_ibfk_3`
+  FOREIGN KEY (`picture_id`)
+  REFERENCES `photoshare`.`pictures` (`picture_id`);
