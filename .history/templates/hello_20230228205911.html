@@ -1,0 +1,50 @@
+<!-- author ben lawson (balawson@bu.edu) -->
+<!doctype html>
+{% if message %}
+  <h4>{{message}}!</h4>
+{% endif %}
+<title>Photoshare</title>
+{% if name %}
+  <h1>Hello {{ name }}!</h1>
+{% endif %}
+
+{% if photos %}
+<h2>Here are your photos</h2>
+    <ul>
+    {% for photo in photos %}
+
+        <li>{{photo[2]}}<br>
+        <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/></li>
+
+        <body>
+          <div class="title">
+              <h1>Enter comments below</h1>
+          </div>
+          <div id="content">
+              <form method="post" action="{{ url_for('comments') }}">
+                  <label for="comment">Enter your comment:</label>
+                  <input type="comment" comment="comment" /><br />
+                  <input pid= photo[0] /><br />
+                  <input type="submit" />
+              </form>
+           </div>
+      </body>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if message is none %}
+  <p>You should <a href='/login'>login!</a></p>
+{% else %}
+  <p> Go to <a href='/profile'>profile?</a></p>
+{% endif %}
+
+<ul>
+<li><a href='/upload'>Upload a photo</a> </li>
+<li><a href='/MyFriends'>Show Friends</a> </li>
+<li><a href='/AddFriends'>Add Friends</a> </li>
+<li><a href='/activities'>Top Users</a> </li>
+<li><a href='/albums'>Albums</a></li>
+<li><a href='/logout'>Logout</a></li>
+<li><a href='/'>Home</a></li>
+</ul>

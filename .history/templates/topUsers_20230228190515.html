@@ -1,0 +1,30 @@
+{% if users %}
+<h2>Here are the top 10 users</h2>
+    <ul>
+    {% for user in users %}
+
+        <h4>{{user[0]}}</h4>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if name %}
+    <h4>{{name}}</h4>
+{% endif %}
+
+<body>
+    <div class="title">
+        <h1>Enter user's ID below</h1>
+    </div>
+    <div id="content">
+        <form method="post" action="{{ url_for('SearchFriends') }}">
+            <label for="uid">Enter user's ID:</label>
+            <input type="uid" name="uid" /><br />
+            <input type="submit" />
+        </form>
+     </div>
+</body>
+
+<ul>
+    <a href='/'>Home</a>
+</ul>

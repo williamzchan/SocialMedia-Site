@@ -13,7 +13,6 @@ import flask
 from flask import Flask, Response, request, render_template, redirect, url_for
 from flaskext.mysql import MySQL
 import flask_login
-from datetime import datetime
 
 #for image uploading
 import os, base64
@@ -24,7 +23,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -87,8 +86,6 @@ def AddFriends():
 			<a href='/'>Home</a>
 				'''
 	email = flask.request.form['email']
-	if(email == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
 	cursor = conn.cursor()
 	if cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(email)):
 		data = cursor.fetchall()
@@ -108,6 +105,7 @@ def AddFriends():
 	
 	return  render_template('addFriends.html', message='User Not Found.')
 
+
 @app.route('/MyFriends', methods=['GET'])
 @flask_login.login_required
 def MyFriends():
@@ -116,21 +114,25 @@ def MyFriends():
 	friends = cursor.fetchall()
 	return render_template('showFriends.html', friends = friends)
 
+
 @app.route('/MyFriends', methods=['POST'])
-@flask_login.login_required
 def SearchFriends():
 	try:
 		uid = request.form.get('uid')
 	except:
 		return flask.redirect(flask.url_for('MyFriends'))
 	
-	if(uid == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
-	
 	cursor = conn.cursor()
 	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
 	name = cursor.fetchone()[0]
-	return render_template('showFriends.html', name = name)
+	return render_template('hello.html', message = name, photos=getUsersPhotos(uid), base64=base64)
+
+@app.route('/activities', methods = ['POST'])
+def activities():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
+	users = cursor.fetchall()
+	return render_template('showFriends.html', friends = users)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -187,9 +189,6 @@ def register_user():
 		print("couldn't find all tokens") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('register'))
 	
-	if(email == "" or password == "" or first_name == "" or last_name == "" or dob == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
-	
 	hometown = request.form.get('hometwon')
 	gender = request.form.get('gender')
 	cursor = conn.cursor()
@@ -208,13 +207,8 @@ def register_user():
 
 def getUsersPhotos(uid):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures WHERE user_id = '{0}'".format(uid))
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
-
-def getAllPhotosLikes(uid):
-	cursor = conn.cursor()
-	cursor.execute("SELECT U.first_name, P.picture_id FROM users U, likes L, pictures P WHERE P.user_id = '{0}' AND L.picture_id = P.picture_id AND L.user_id = U.user_ID".format(uid))
-	return cursor.fetchall()
 
 def getUserIdFromEmail(email):
 	cursor = conn.cursor()
@@ -234,33 +228,18 @@ def isEmailUnique(email):
 		return False
 	else:
 		return True
-	
-def isLikeUnique(uid, pid):
-	
-	cursor = conn.cursor()
-	if cursor.execute("SELECT picture_id FROM likes WHERE user_id = '{0}' AND picture_id = '{1}'".format(uid, pid)):
-		#this means there are greater than zero entries with that email
-		return False
-	else:
-		return True
 #end login code
 
 def increaseContributionScore(id):
 	cursor = conn.cursor()
 	cursor.execute("UPDATE users set contribution_score = contribution_score + 1 WHERE user_id = '{0}'".format(id))
 	conn.commit()
-	return
-
-def increaseLikes(pid):
-	cursor = conn.cursor()
-	cursor.execute("UPDATE pictures set like_count = like_count + 1 WHERE picture_id = '{0}'".format(pid))
-	conn.commit()
-	return
+	return 
 
 @app.route('/profile')
 @flask_login.login_required
 def protected():
-	return render_template('hello.html', name=flask_login.current_user.id, photos=getUsersPhotos(getUserIdFromEmail(flask_login.current_user.id)), likes = getAllPhotosLikes(getUserIdFromEmail(flask_login.current_user.id)), base64=base64, message="Here's your profile")
+	return render_template('hello.html', name=flask_login.current_user.id, message="Here's your profile")
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -277,18 +256,16 @@ def upload_file():
 		caption = request.form.get('caption')
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s)''', (photo_data, uid, caption))
+		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data, uid, caption))
 		conn.commit()
 		increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
-		#add something to go into album
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')
-
 #end photo uploading code
 #albums stuff
-@app.route('/albums', methods=['GET'])
+@app.route('/albums')
 @flask_login.login_required
 def albums():
    uid = getUserIdFromEmail(flask_login.current_user.id)
@@ -296,16 +273,6 @@ def albums():
    cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
    albums = cursor.fetchall()
    return render_template('albums.html', albums=albums)
-#aid being album id maybe not work idk
-def getAlbumPhotos(uid):
-	cursor = conn.cursor()
-	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
-
-
-
-
-
 
 
 #default page

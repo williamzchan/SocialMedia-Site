@@ -24,7 +24,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -117,7 +117,6 @@ def MyFriends():
 	return render_template('showFriends.html', friends = friends)
 
 @app.route('/MyFriends', methods=['POST'])
-@flask_login.login_required
 def SearchFriends():
 	try:
 		uid = request.form.get('uid')
@@ -130,7 +129,64 @@ def SearchFriends():
 	cursor = conn.cursor()
 	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
 	name = cursor.fetchone()[0]
-	return render_template('showFriends.html', name = name)
+	return render_template('hello.html', message = name, photos=getUsersPhotos(uid), comments = getAllPhotosLikes(uid), likes = getAllPhotosLikes(uid), base64=base64)
+
+@app.route('/activities')
+def activities():
+	cursor = conn.cursor()
+	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
+	users = cursor.fetchall()
+	return render_template('topUsers.html', users = users)
+
+@app.route('/comments', methods=['POST'])
+def comments():
+	try:
+		comment = request.form.get('comment')
+		pid = request.form.get('pid')
+		like = request.form.get('like')
+	except:
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	if(comment == "" or pid == ""):
+		return render_template('hello.html', message= 'could not find all tokens')
+
+	try:
+		user = flask_login.current_user.id
+	except:
+		user = "guest"
+
+	cursor = conn.cursor()
+
+	if(like != "" and user != "guest"):
+		if(isLikeUnique(getUserIdFromEmail(flask_login.current_user.id), pid)):
+			cursor.execute("INSERT INTO likes (user_id, picture_id) VALUES ('{0}', '{1}')".format(getUserIdFromEmail(flask_login.current_user.id), pid))
+		else:
+			return render_template('hello.html', message= 'you cannot like a picture twice')
+
+
+	cursor.execute("SELECT comment_id FROM comments order by comment_id desc LIMIT 1")
+	cid = cursor.fetchone()[0]
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT user_id FROM pictures WHERE picture_id = '{0}'".format(pid))
+	owner = cursor.fetchone()[0]
+
+	if(getUserIdFromEmail(flask_login.current_user.id) != owner):
+		cursor.execute("INSERT INTO comments (comment_text, commenter, date_of_comment) VALUES ('{0}', '{1}', '{2}')".format(comment, user, datetime.now().strftime('%Y-%m-%d')))
+		conn.commit()
+		if(user == "guest"):
+			cursor.execute("INSERT INTO commented (user_id, comment_id, picture_id) VALUES ('{0}', '{1}', '{2}')".format(12, cid, pid))
+			conn.commit()
+		else:
+			cursor.execute("INSERT INTO commented (user_id, comment_id, picture_id) VALUES ('{0}', '{1}', '{2}')".format(getUserIdFromEmail(flask_login.current_user.id), cid, pid))
+			conn.commit()
+			increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
+	else:
+		return render_template('hello.html', message= 'Cannot comment on your own picture')
+
+	return render_template('hello.html', message= 'Commeted')
+
+
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -208,7 +264,7 @@ def register_user():
 
 def getUsersPhotos(uid):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures WHERE user_id = '{0}'".format(uid))
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
 
 def getAllPhotosLikes(uid):
@@ -249,13 +305,7 @@ def increaseContributionScore(id):
 	cursor = conn.cursor()
 	cursor.execute("UPDATE users set contribution_score = contribution_score + 1 WHERE user_id = '{0}'".format(id))
 	conn.commit()
-	return
-
-def increaseLikes(pid):
-	cursor = conn.cursor()
-	cursor.execute("UPDATE pictures set like_count = like_count + 1 WHERE picture_id = '{0}'".format(pid))
-	conn.commit()
-	return
+	return 
 
 @app.route('/profile')
 @flask_login.login_required
@@ -277,7 +327,7 @@ def upload_file():
 		caption = request.form.get('caption')
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s)''', (photo_data, uid, caption))
+		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data, uid, caption))
 		conn.commit()
 		increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
 		#add something to go into album
@@ -285,7 +335,6 @@ def upload_file():
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		return render_template('upload.html')
-
 #end photo uploading code
 #albums stuff
 @app.route('/albums', methods=['GET'])
@@ -301,7 +350,6 @@ def getAlbumPhotos(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
-
 
 
 
