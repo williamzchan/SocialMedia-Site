@@ -158,6 +158,11 @@ def comments():
 		if(isLikeUnique(getUserIdFromEmail(flask_login.current_user.id), pid)):
 			cursor.execute("INSERT INTO likes (user_id, picture_id) VALUES ('{0}', '{1}')".format(getUserIdFromEmail(flask_login.current_user.id), pid))
 			increaseLikes(pid)
+			cursor = conn.cursor()
+			cursor.execute("SELECT user_id FROM pictures WHERE picture_id = '{0}'".format(pid))
+			owner = cursor.fetchone()[0]
+			if(owner != getUserIdFromEmail(flask_login.current_user.id)):
+				increaseContributionScore(getUserIdFromEmail(flask_login.current_user.id))
 		else:
 			return render_template('hello.html', message= 'you cannot like a picture twice')
 
