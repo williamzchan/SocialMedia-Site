@@ -374,7 +374,7 @@ def activities():
 '''
 
 #albums stuff
-@app.route('/albums', methods=['GET'])
+@app.route('/MyAlbums', methods=['GET'])
 @flask_login.login_required
 def MyAlbums():
 	return render_template('albums.html')
@@ -409,4 +409,4 @@ if __name__ == "__main__":
 	#$ python app.py
 	app.run(port=5000, debug=True)
 
-#shrek is real
+
