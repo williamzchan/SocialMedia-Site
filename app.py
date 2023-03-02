@@ -388,7 +388,7 @@ def FindMyAlbums():
 		return render_template('albums.html', message='No user found with that email')
    	
 	cursor = conn.cursor()
-	cursor.execute("SELECT album_id FROM album WHERE user_id = '{0}'".format(getUserIdFromEmail(uid))) 
+	cursor.execute("SELECT album_id, album_name FROM album WHERE user_id = '{0}'".format(getUserIdFromEmail(uid))) 
 	albums = cursor.fetchall()
 	return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
