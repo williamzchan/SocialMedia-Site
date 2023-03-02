@@ -1,5 +1,5 @@
 <!--  use search bar to swearch for album name-->
-  
+ <!--  confused about how the html and python and sql all connect--> 
   {% if users %}
 <h2>Here are the top 10 users</h2>
     <ul>
@@ -16,11 +16,11 @@
 
 <body>
   <div class="title">
-      <h1>Enter User's ID below</h1>
+      <h1>Enter Album ID below</h1>
   </div>
   <div id="content">
       <form method="post" action="{{ url_for('FindMyAlbums') }}">
-          <label for="uid">Enter friend's ID:</label>
+          <label for="uid">Enter album ID:</label>
           <input type="uid" name="uid" /><br />
           <input type="submit" />
       </form>
