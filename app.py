@@ -526,6 +526,23 @@ def FindMyAlbums():
 	albums = cursor.fetchall()
 	return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
+@app.route('/SearchAlbums', methods=['GET'])
+def Salbums():
+	return render_template('findAlbum.html')
+
+
+@app.route('/SearchAlbums', methods=['POST'])
+def searchAlbums():
+	try:
+		aid = request.form.get('aid')
+	except:
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	if(aid == ""):
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	return render_template('findAlbums.html', photos = getAlbumPhotos(aid))
+
 
 
 #default page
