@@ -211,6 +211,13 @@ def searchComments():
 	comm = cursor.fetchall()
 	return render_template('searchComments.html', comments = comm)
 
+@app.route('/newFriends', methods = ['GET'])
+@flask_login.login_required
+def newFriends():
+	cursor = conn.cursor()
+	cursor.execute("SELECT FR.user2_id, U.email, COUNT(*) AS fcount FROM users U, friends F, friends FR WHERE U.user_id = FR.user2_id AND F.user2_id = FR.user1_id AND F.user1_id = '{0}' AND F.user2_id <> '{0}' GROUP BY FR.user2_id ORDER BY fcount desc".format(getUserIdFromEmail(flask_login.current_user.id)))
+	users = cursor.fetchall()
+	return render_template('newFriends.html', friends = users)
 
 
 @app.route('/login', methods=['GET', 'POST'])
