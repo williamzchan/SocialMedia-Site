@@ -367,7 +367,7 @@ def activities():
 	return render_template('topUsers.html', users = users)
 '''
 #for tag view
-@app.route('/tagview')
+@app.route('/tagview', methods =["GET"])
 def tagView(tag_name):
 	cursor = conn.cursor()
 	cursor.execute("SELECT t.tag_name, COUNT(*) AS countz FROM tag t, tagged z  WHERE t.tag_name = z.tag_name GROUP BY t.tag_name ORDER BY countz DESC")
