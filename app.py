@@ -192,6 +192,24 @@ def comments():
 
 	return render_template('hello.html', message= 'Commeted')
 
+@app.route('/searchComments', methods=['GET'])
+def commentsSeach():
+	return render_template('searchComments.html')
+
+@app.route('/searchComments', methods=['POST'])
+def searchComments():
+	try:
+		key = request.form.get('key')
+	except:
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	if(key == ""):
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	cursor = conn.cursor()
+	cursor.execute("SELECT U.first_name, COUNT(*) AS ccount FROM users U, commented CT, comments C WHERE C.comment_id = CT.comment_id AND U.user_id = CT.user_id AND C.comment_text = '{0}' GROUP BY U.first_name ORDER BY ccount desc".format(key))
+	comm = cursor.fetchall()
+	return render_template('searchComments.html', comments = comm)
 
 
 
