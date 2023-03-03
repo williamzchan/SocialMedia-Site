@@ -300,7 +300,7 @@ def getUsersPhotos(uid):
 #added for tag
 def getPhotoTags(tag_name):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id".format(tag_name))
+	cursor.execute("SELECT P.imgdata, P.picture_id, P.caption, P.like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id".format(tag_name))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, tags), ...]
 
 #added changes here for tags
