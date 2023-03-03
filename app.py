@@ -372,7 +372,7 @@ def tagView():
 	cursor = conn.cursor()
 	cursor.execute("SELECT t.tag_name, COUNT(*) AS countz FROM tag t, tagged z  WHERE t.tag_name = z.tag_name GROUP BY t.tag_name ORDER BY countz DESC")
 	tags = cursor.fetchall()
-	return render_template('toptags.html', tags = tags) 
+	return render_template('topTags.html', tags = tags) 
 
 
 @app.route('/profile')
