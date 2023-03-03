@@ -24,7 +24,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -526,9 +526,10 @@ def FindMyAlbums():
 	albums = cursor.fetchall()
 	return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
+
 @app.route('/SearchAlbums', methods=['GET'])
 def Salbums():
-	return render_template('findAlbum.html')
+	return render_template('findAlbums.html')
 
 
 @app.route('/SearchAlbums', methods=['POST'])
@@ -541,7 +542,7 @@ def searchAlbums():
 	if(aid == ""):
 		return render_template('hello.html', message= 'could not find all tokens')
 	
-	return render_template('findAlbums.html', photos = getAlbumPhotos(aid))
+	return render_template('findAlbums.html', photos = getAlbumPhotos(aid), base64=base64)
 
 
 
