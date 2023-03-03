@@ -1,0 +1,12 @@
+<body>
+    <div class="title">
+        <h1>Enter tag below</h1>
+    </div>
+    <div id="content">
+        <form method="post" action="{{ url_for('MysearchTags') }}">
+            <label for="tag">Enter tag name:</label>
+            <input type="tag" name="tag" /><br />
+            <input type="submit" />
+        </form>
+     </div>
+</body>

@@ -300,7 +300,7 @@ def getUsersPhotos(uid):
 #added for tag
 def getPhotoTags(tag_name):
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, tags, like_count FROM Pictures WHERE user_id = '{0}'".format(tag_name))
+	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id".format(tag_name))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, tags), ...]
 
 #added changes here for tags
@@ -527,10 +527,30 @@ def FindMyAlbums():
 	return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
 
+@app.route('/myTags', methods=['POST'])
+@flask_login.login_required
+def sTags():
+	return render_template('myTags.html')
+
+@app.route('/myTags', methods=['POST'])
+@flask_login.login_required
+def MysearchTags():
+	try:
+		tag = request.form.get('tag')
+	except:
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	if(tag == ""):
+		return render_template('hello.html', message= 'could not find all tokens')
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id AND P.user_id = '{1}'".format(tid, getUserIdFromEmail(flask_login.current_user.id)))
+	pics = cursor.fetchall()
+	return render_template('hello.html', photos = pics, base64 = base64)
+
 @app.route('/SearchAlbums', methods=['GET'])
 def Salbums():
 	return render_template('findAlbums.html')
-
 
 @app.route('/SearchAlbums', methods=['POST'])
 def searchAlbums():
@@ -543,6 +563,20 @@ def searchAlbums():
 		return render_template('hello.html', message= 'could not find all tokens')
 	
 	return render_template('findAlbums.html', photos = getAlbumPhotos(aid), base64=base64)
+
+@app.route('/searchTags', methods=['POST'])
+def searchTags():
+	try:
+		tag = request.form.get('tag')
+	except:
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	if(tag == ""):
+		return render_template('hello.html', message= 'could not find all tokens')
+	
+	return render_template('topTags', photos = getPhotoTags(tag), base64=base64)
+	
+
 
 
 
