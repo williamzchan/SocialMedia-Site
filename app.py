@@ -527,7 +527,7 @@ def FindMyAlbums():
 	return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
 
-@app.route('/myTags', methods=['POST'])
+@app.route('/myTags', methods=['GET'])
 @flask_login.login_required
 def sTags():
 	return render_template('myTags.html')
@@ -544,7 +544,7 @@ def MysearchTags():
 		return render_template('hello.html', message= 'could not find all tokens')
 
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id AND P.user_id = '{1}'".format(tid, getUserIdFromEmail(flask_login.current_user.id)))
+	cursor.execute("SELECT P.imgdata, P.picture_id, P.caption, P.like_count FROM Pictures P, tagged T WHERE T.tag_name = '{0}' AND P.picture_id = T.picture_id AND P.user_id = '{1}'".format(tag, getUserIdFromEmail(flask_login.current_user.id)))
 	pics = cursor.fetchall()
 	return render_template('hello.html', photos = pics, base64 = base64)
 
@@ -574,7 +574,7 @@ def searchTags():
 	if(tag == ""):
 		return render_template('hello.html', message= 'could not find all tokens')
 	
-	return render_template('topTags', photos = getPhotoTags(tag), base64=base64)
+	return render_template('topTags.html', photos = getPhotoTags(tag), base64=base64)
 	
 
 
