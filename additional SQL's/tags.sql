@@ -1,1 +1,3 @@
-SELECT album_id FROM album WHERE user_id =
+create table tag( 
+    tag_name char(6) not null primary key 
+)

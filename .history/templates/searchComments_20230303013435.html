@@ -1,0 +1,16 @@
+<body>
+    <div class="title">
+        <h1>Search Comments</h1>
+    </div>
+    <div id="content">
+        <form method="post" action="{{ url_for('searchComments') }}">
+            <label for="key">Enter keyword:</label>
+            <input type="key" name="key" /><br />
+            <input type="submit" />
+        </form>
+     </div>
+</body>
+
+<ul>
+    <a href='/'>Home</a>
+</ul>

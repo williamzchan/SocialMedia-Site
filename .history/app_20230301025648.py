@@ -24,7 +24,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'CASCS460'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Password'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -121,7 +121,7 @@ def SearchFriends():
 	try:
 		uid = request.form.get('uid')
 	except:
-		return flask.redirect(flask.url_for('My'))
+		return flask.redirect(flask.url_for('MyFriends'))
 	
 	if(uid == ""):
 		return render_template('hello.html', message= 'could not find all tokens')
@@ -192,32 +192,7 @@ def comments():
 
 	return render_template('hello.html', message= 'Commeted')
 
-@app.route('/searchComments', methods=['GET'])
-def commentsSeach():
-	return render_template('searchComments.html')
 
-@app.route('/searchComments', methods=['POST'])
-def searchComments():
-	try:
-		key = request.form.get('key')
-	except:
-		return render_template('hello.html', message= 'could not find all tokens')
-	
-	if(key == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
-	
-	cursor = conn.cursor()
-	cursor.execute("SELECT U.first_name, COUNT(*) AS ccount FROM users U, commented CT, comments C WHERE C.comment_id = CT.comment_id AND U.user_id = CT.user_id AND C.comment_text = '{0}' GROUP BY U.first_name ORDER BY ccount desc".format(key))
-	comm = cursor.fetchall()
-	return render_template('searchComments.html', comments = comm)
-
-@app.route('/newFriends', methods = ['GET'])
-@flask_login.login_required
-def newFriends():
-	cursor = conn.cursor()
-	cursor.execute("SELECT FR.user2_id, U.email, COUNT(*) AS fcount FROM users U, friends F, friends FR WHERE U.user_id = FR.user2_id AND F.user2_id = FR.user1_id AND F.user1_id = '{0}' AND F.user2_id <> '{0}' GROUP BY FR.user2_id ORDER BY fcount desc".format(getUserIdFromEmail(flask_login.current_user.id)))
-	users = cursor.fetchall()
-	return render_template('newFriends.html', friends = users)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -297,17 +272,6 @@ def getUsersPhotos(uid):
 	cursor = conn.cursor()
 	cursor.execute("SELECT imgdata, picture_id, caption, like_count FROM Pictures WHERE user_id = '{0}'".format(uid))
 	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
-#added for tag
-def getPhotoTags(tag_name):
-	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, tags, like_count FROM Pictures WHERE user_id = '{0}'".format(tag_name))
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, tags), ...]
-
-#added changes here for tags
-def getAlbumPhotos(aid):
-	cursor = conn.cursor()
-	cursor.execute("SELECT P.imgdata, P.picture_id, P.caption, P.like_count FROM Pictures P, ahasp AP WHERE P.picture_id = AP.picture_id AND AP.album_id = '{0}'".format(aid))
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
 
 def getAllPhotosLikes(uid):
 	cursor = conn.cursor()
@@ -343,8 +307,6 @@ def isLikeUnique(uid, pid):
 		return True
 #end login code
 
-
-
 def increaseContributionScore(id):
 	cursor = conn.cursor()
 	cursor.execute("UPDATE users set contribution_score = contribution_score + 1 WHERE user_id = '{0}'".format(id))
@@ -356,24 +318,6 @@ def increaseLikes(pid):
 	cursor.execute("UPDATE pictures set like_count = like_count + 1 WHERE picture_id = '{0}'".format(pid))
 	conn.commit()
 	return
-
-
-'''
-@app.route('/activities')
-def activities():
-	cursor = conn.cursor()
-	cursor.execute("SELECT user_id FROM users order by contribution_score desc LIMIT 10")
-	users = cursor.fetchall()
-	return render_template('topUsers.html', users = users)
-'''
-#for tag view
-@app.route('/tagview')
-def tagView(tag_name):
-	cursor = conn.cursor()
-	cursor.execute("SELECT t.tag_name, COUNT(*) AS countz FROM tag t, tagged z  WHERE t.tag_name = z.tag_name GROUP BY t.tag_name ORDER BY countz DESC")
-	users = cursor.fetchall()
-	return render_template('toptags.html', users = users) 
-
 
 @app.route('/profile')
 @flask_login.login_required
@@ -404,107 +348,33 @@ def upload_file():
 	else:
 		return render_template('upload.html')
 #end photo uploading code
-
-
-'''
-
-A new page looks like this:
-@app.route('new_page_name')
-def new_page_function():
-	return new_page_html
-
-
-@app.route('/AddFriends', methods=['GET', 'POST'])
-@flask_login.login_required
-def AddFriends():
-	if flask.request.method == 'GET':
-		return 
-				<form action='AddFriends' method='POST'>
-				<input type='text' name='email' id='email' placeholder='email'></input>
-			<a href='/'>Home</a>
-				
-	email = flask.request.form['email']
-	if(email == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
-	cursor = conn.cursor()
-	if cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(email)):
-		data = cursor.fetchall()
-		u2 = str(data[0][0])
-
-		cursor.execute("SELECT user_id FROM Users WHERE email = '{0}'".format(flask_login.current_user.id))
-		data = cursor.fetchall()
-		u1 = str(data[0][0])
-		
-		if cursor.execute("SELECT user1_ID, user2_ID FROM friends WHERE user1_ID = '{0}' and user2_ID = '{1}'".format(u1, u2)):
-			return render_template('addFriends.html', message='Already Friends.')
-		else:
-			cursor.execute("INSERT INTO friends (user1_ID, user2_ID) VALUES ('{0}', '{1}')".format(u1, u2))
-			conn.commit()
-
-		return render_template('addFriends.html', message='Added!', userid=getNameFromID(u2))
-	
-	return  render_template('addFriends.html', message='User Not Found.')
-
-@app.route('/MyFriends', methods=['GET'])
-@flask_login.login_required
-def MyFriends():
-	cursor = conn.cursor()
-	cursor.execute("SELECT user2_ID FROM friends WHERE user1_ID = '{0}'".format(getUserIdFromEmail(flask_login.current_user.id)))
-	friends = cursor.fetchall()
-	return render_template('showFriends.html', friends = friends)
-
-	
-
-
-@app.route('/MyFriends', methods=['POST'])
-def SearchFriends():
-	try:
-		uid = request.form.get('uid')
-	except:
-		return flask.redirect(flask.url_for('My'))
-	
-	if(uid == ""):
-		return render_template('hello.html', message= 'could not find all tokens')
-	
-	cursor = conn.cursor()
-	cursor.execute("SELECT first_name FROM Users WHERE user_ID = '{0}'".format(uid))
-	name = cursor.fetchone()[0]
-	return render_template('hello.html', message = name, photos=getUsersPhotos(uid), likes = getAllPhotosLikes(uid), base64=base64)
-
-'''
-
 #albums stuff
-@app.route('/MyAlbums', methods=['GET'])
+@app.route('/albums', methods=['GET'])
 @flask_login.login_required
-def MyAlbums():
-	return render_template('albums.html')
-
-@app.route('/MyAlbums', methods=['POST'])
-@flask_login.login_required
-def FindMyAlbums():
-	try:
-		uid = request.form.get('uid')
-	except:
-		return render_template('albums.html', message='No album found with that name')
-	if(uid == ""):
-		return render_template('albums.html', message= 'nothing entered')
-   	
-	cursor = conn.cursor()
-	cursor.execute("SELECT album_id, album_name FROM album WHERE user_id = '{0}'".format(getUserIdFromEmail(uid))) 
-	albums = cursor.fetchall()
-	return render_template('albums.html', albums=albums)
+def albums():
+   uid = getUserIdFromEmail(flask_login.current_user.id)
+   cursor = conn.cursor()
+   cursor.execute("SELECT album_id, album_name FROM Albums WHERE user_id = '{0}'".format(uid))
+   albums = cursor.fetchall()
+   return render_template('albums.html', albums=albums)
 #aid being album id maybe not work idk
+def getAlbumPhotos(uid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT album_id,  album_name, user_ID, date_of_creation FROM album WHERE user_id = '{0}'".format(uid))
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
+
+
+
 
 
 #default page
 @app.route("/", methods=['GET'])
 def hello():
-	return render_template('hello.html', message='Welcome to Photoshare')
+	return render_template('hello.html', message='Welecome to Photoshare')
 
 
 if __name__ == "__main__":
 	#this is invoked when in the shell  you run
 	#$ python app.py
 	app.run(port=5000, debug=True)
-
-

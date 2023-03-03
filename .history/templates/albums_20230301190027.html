@@ -1,0 +1,45 @@
+<!--  use search bar to swearch for album name-->
+  
+  % if users %}
+<h2>Here are the top 10 users</h2>
+    <ul>
+    {% for user in users %}
+
+        <h4>{{user[0]}}</h4>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if name %}
+    <h4>{{name}}</h4>
+{% endif %}
+
+<body>
+  <div class="title">
+      <h1>Enter User's ID below</h1>
+  </div>
+  <div id="content">
+      <form method="post" action="{{ url_for('FindMyAlbum') }}">
+          <label for="uid">Enter friend's ID:</label>
+          <input type="uid" name="uid" /><br />
+          <input type="submit" />
+      </form>
+   </div>
+</body>
+
+{% if Albums %}
+<h2>Here are your albumss</h2>
+    <ul>
+    {% for album in albums %}
+
+        <h4>{{album[0]}}: {{album[1]}}</h4>      
+
+    {% endfor %}
+    </ul>
+
+    
+{% endif %}
+
+<ul>
+    <a href='/'>Home</a>
+</ul>
