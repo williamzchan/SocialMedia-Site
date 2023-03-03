@@ -473,6 +473,38 @@ def SearchFriends():
 
 '''
 
+@app.route('/addPicturetoAlbum', methods=['GET', 'POST'])
+@flask_login.login_required
+def addPicturetoAlbum():
+    if flask.request.method == 'GET':
+        return '''
+                <form action='addPicturetoAlbum' method='POST'>
+                <input type='text' name='album_name' id='album_name' placeholder='email'></input>
+            <a href='/'>Home</a>
+                '''
+    album_name = flask.request.form['album_name']
+    if(album_name == ""):
+        return render_template('hello.html', message= 'could not find album')
+    cursor = conn.cursor()
+    if cursor.execute("SELECT album_id FROM album WHERE album_name = '{0}'".format(album_name)):
+        data = cursor.fetchall()
+        u2 = str(data[0][0])
+
+        cursor.execute("SELECT user_id FROM Users WHERE album_name = '{0}'".format(flask_login.current_user.id))
+        data = cursor.fetchall()
+        u1 = str(data[0][0])
+
+        if cursor.execute("INSERT INTO friends (user1_ID, user2_ID) VALUES ('{0}', '{1}')".format(u1, u2)):
+            return render_template('albums.html', message='Already Friends.')
+        else:
+            #tag_name photo_id 
+            cursor.execute("INSERT INTO friends (user1_ID, user2_ID) VALUES ('{0}', '{1}')".format(u1, u2))
+            conn.commit()
+
+        return render_template('albums.html', message='Added!', userid=getNameFromID(u2))
+
+    return  render_template('albums.html', message='User Not Found.')
+
 #albums stuff
 @app.route('/MyAlbums', methods=['GET'])
 @flask_login.login_required
