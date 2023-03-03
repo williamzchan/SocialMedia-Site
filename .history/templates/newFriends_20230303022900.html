@@ -1,0 +1,12 @@
+{% if friends %}
+<h2>Here are your friends suggestions</h2>
+    <ul>
+    {% for friend in friends %}
+
+        <h4>{{friend[0]}}</h4>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+
+<a href='/'>Home</a>
