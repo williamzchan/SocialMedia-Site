@@ -10,4 +10,4 @@ To get the skeleton running, open a terminal and do the following:
 	7. open your browser, and open the local website 'localhost:5000'
 	
 	
-	*Note Willzchan is my school-email/github account
+	*Note WillZChan is my school-email/github account
